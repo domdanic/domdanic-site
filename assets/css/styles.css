@@ -67,7 +67,7 @@ p { max-width:72ch; }
 .link-card h3,.compact-title { overflow-wrap:anywhere; word-break:break-word; }
 .compact-title { font-size:clamp(1rem,2vw,1.22rem); line-height:1.12; }
 .affiliate-card { overflow:hidden; }
-.discount-code { max-width:100%; font-size:clamp(1.45rem,4vw,2.55rem); letter-spacing:-.035em; overflow-wrap:anywhere; word-break:break-word; }
+.discount-code { max-width:100%; font-size:clamp(1rem,4.2vw,1.8rem); letter-spacing:-.05em; white-space:nowrap; overflow-wrap:normal; word-break:normal; }
 .page-hero { padding:clamp(5rem,9vw,8rem) 0 3.5rem; border-bottom:1px solid var(--line); background:linear-gradient(90deg,rgba(8,6,5,.96),rgba(8,6,5,.56)); }
 .page-hero h1 { font-size:clamp(3.2rem,8vw,6.8rem); }
 .split { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,.45fr); gap:2rem; align-items:start; }
