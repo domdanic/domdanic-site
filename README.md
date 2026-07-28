@@ -1,34 +1,40 @@
 # domdanic-site
 
-Static multi-page migration of `domdanic.carrd.co`, designed for GitHub Pages.
-
-## Draft goals
-
-- preserve all Carrd sections and source data before rewriting
-- keep frequently changed credits and artist information in `assets/js/data.js`
-- retain a rough Viking/metal presentation with sharp geometry
-- cast decorative shadows upward because the visual fire source sits below the frame
-- remain framework-free and easy to host on GitHub Pages
+Multi-page static website for the domdanic creator brand.
 
 ## Pages
 
-- `/` — Home
-- `/socials/`
-- `/music/`
-- `/about/`
-- `/credits/`
-- `/affiliates/`
-- `/schedule/`
+- Home
+- Socials
+- Stream Music
+- About
+- Art Credits
+- Affiliates
+- Schedule
 
-## Updating data
+## Content maintenance
 
-- Music directory, social links, and art credits: `assets/js/data.js`
-- Page copy and rendering: `assets/js/app.js`
-- Full Carrd preservation snapshot: `archive/carrd-snapshot-2026-07-28.md`
+Frequently updated content lives in `assets/js/data.js`:
 
-## Known draft items
+- social destinations
+- Spotify playlists
+- stream-use and licensing references
+- labels and rights holders
+- artist directory entries
+- art credits
 
-- The logo and background are temporarily referenced from Carrd. Upload the original files before retiring Carrd.
-- Artist names and rights holders are preserved. Some Spotify buttons use Spotify search links until the original Carrd artist URIs are audited.
-- The schedule is deliberately marked for review because the Carrd version uses Mountain Time.
-- `noindex, nofollow` remains enabled until the custom domain is ready.
+The page layout and behavior live in `assets/js/app.js`. Shared styling lives in `assets/css/styles.css`.
+
+## Schedule behavior
+
+The recurring schedule is defined in Mountain Time in `assets/js/app.js`. The Schedule page converts the next weekly occurrence into the timezone reported by each visitor's browser, including overnight day changes and daylight-saving offsets.
+
+## Branding assets
+
+The logo and background are temporarily referenced from the existing Carrd-hosted files. Replace them with local copies before retiring the Carrd site; instructions are in `assets/branding/README.md`.
+
+## Launch state
+
+All page shells currently include `noindex, nofollow` while the site is under review. Remove that meta directive before the public search-indexed launch.
+
+A dated source-content snapshot remains in `archive/` as a migration safety net.
