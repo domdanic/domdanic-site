@@ -25,16 +25,27 @@ Frequently updated content lives in `assets/js/data.js`:
 
 The page layout and behavior live in `assets/js/app.js`. Shared styling lives in `assets/css/styles.css`.
 
-## Schedule behavior
+## Schedule maintenance
 
-The recurring schedule is defined in Mountain Time in `assets/js/app.js`. The Schedule page converts the next weekly occurrence into the timezone reported by each visitor's browser, including overnight day changes and daylight-saving offsets.
+The recurring schedule is defined in Pacific Time in `assets/js/app.js`. The Schedule page converts each weekly occurrence into the timezone reported by the visitor's browser, including local weekday changes, overnight streams, and daylight-saving offsets.
+
+Schedule rows use:
+
+- `data-day`: `0` Sunday through `6` Saturday
+- `data-start`: start time in 24-hour `HH:MM` format
+- `data-end`: end time in 24-hour `HH:MM` format
+- `data-approx="true"`: optional; adds an `Approx.` prefix
+
+To remove a stream, delete its complete `<tr>...</tr>` row. To add one, copy an existing row and change the day, times, and title. Table layout and timezone conversion update automatically.
 
 ## Branding assets
 
 The logo and background are temporarily referenced from the existing Carrd-hosted files. Replace them with local copies before retiring the Carrd site; instructions are in `assets/branding/README.md`.
 
-## Launch state
+## Search indexing
 
-All page shells currently include `noindex, nofollow` while the site is under review. Remove that meta directive before the public search-indexed launch.
+Public pages are indexable. The custom `404.html` intentionally remains `noindex, nofollow`.
 
-A dated source-content snapshot remains in `archive/` as a migration safety net.
+## Archive
+
+A dated source-content snapshot remains in `archive/` as a migration safety net. It is not used to render the public site.
