@@ -40,7 +40,12 @@ To remove a stream, delete its complete `<tr>...</tr>` row. To add one, copy an 
 
 ## Branding assets
 
-The logo and background are temporarily referenced from the existing Carrd-hosted files. Replace them with local copies before retiring the Carrd site; instructions are in `assets/branding/README.md`.
+Local, web-optimized branding files live in `assets/branding/`:
+
+- `domdanic-logo.webp` — transparent header logo
+- `domdanic-background.webp` — static site background
+
+The logo is referenced by `assets/js/app.js`; the background is referenced by `assets/css/styles.css`.
 
 ## Search indexing
 
