@@ -1,10 +1,8 @@
 # Branding assets
 
-The first draft temporarily references the Carrd-hosted logo and background because the binary files could not be extracted through the available environment.
+The site stores its branding locally so it does not depend on Carrd-hosted files.
 
-Replace with:
+- `domdanic-logo.webp` — transparent logo used in the site header
+- `domdanic-background.webp` — static ember background used across the site
 
-- `domdanic-logo.png`
-- `domdanic-background.jpg`
-
-Then update `assets/js/app.js` and `assets/css/styles.css` to use local paths before retiring the Carrd site.
+The source images were converted to WebP for smaller downloads while preserving transparency on the logo.
