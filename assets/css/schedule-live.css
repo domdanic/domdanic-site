@@ -1,0 +1,52 @@
+.schedule-live-status {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.schedule-live-status.is-live {
+  color: var(--bronze, #c48b52);
+}
+
+.schedule-live-status.is-fallback {
+  color: var(--muted);
+}
+
+.schedule-event-title,
+.schedule-event-description {
+  display: block;
+}
+
+.schedule-event-title {
+  color: var(--ink, #f1e7db);
+}
+
+.schedule-event-description {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.schedule-empty {
+  padding-block: 2rem !important;
+  color: var(--muted);
+  text-align: center;
+}
+
+.schedule-attribution {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.schedule-attribution a {
+  color: inherit;
+  text-decoration-color: rgba(196, 139, 82, 0.5);
+  text-underline-offset: 0.18em;
+}
+
+.schedule-attribution a:hover,
+.schedule-attribution a:focus-visible {
+  color: var(--ink, #f1e7db);
+}
