@@ -12,6 +12,37 @@
   color: var(--muted);
 }
 
+.schedule-group-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.7fr);
+  gap: 2rem;
+  align-items: end;
+  margin: 0 0 1.1rem;
+}
+
+.schedule-group-heading .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.schedule-group-heading h2 {
+  margin-bottom: 0;
+}
+
+.schedule-group-description {
+  margin: 0;
+  color: var(--muted);
+}
+
+.schedule-group-elsewhere {
+  margin-top: 4.5rem;
+  padding-top: 3.5rem;
+  border-top: 1px solid rgba(196, 139, 82, 0.22);
+}
+
+.schedule-group-elsewhere[hidden] {
+  display: none;
+}
+
 .schedule-event-title,
 .schedule-event-description {
   display: block;
@@ -34,7 +65,7 @@
 }
 
 .schedule-attribution {
-  margin: 0.85rem 0 0;
+  margin: 1rem 0 0;
   color: var(--muted);
   font-size: 0.78rem;
   text-align: right;
@@ -49,4 +80,16 @@
 .schedule-attribution a:hover,
 .schedule-attribution a:focus-visible {
   color: var(--ink, #f1e7db);
+}
+
+@media (max-width: 760px) {
+  .schedule-group-heading {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .schedule-group-elsewhere {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+  }
 }
