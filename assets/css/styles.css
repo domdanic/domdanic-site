@@ -31,7 +31,7 @@ img { max-width:100%; }
 .header-grid { min-height:78px; display:grid; grid-template-columns:auto 1fr; gap:1.5rem; align-items:center; }
 .brand { display:flex; align-items:center; gap:.8rem; color:var(--ink); text-decoration:none; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
 .brand-logo { width:44px; height:44px; object-fit:contain; filter:drop-shadow(0 -7px 10px rgba(215,68,28,.35)); }
-.brand-word { font-family: Georgia, "Times New Roman", serif; font-size:1.1rem; text-transform:none; }
+.brand .brand-word { font-family: Georgia, "Times New Roman", serif; font-size:1.1rem; text-transform:lowercase !important; }
 .site-nav { display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:.15rem; }
 .site-nav a { color:var(--muted); text-decoration:none; text-transform:uppercase; letter-spacing:.09em; font-size:.75rem; font-weight:800; padding:.6rem .7rem; border-bottom:2px solid transparent; }
 .site-nav a:hover,.site-nav a:focus-visible,.site-nav a[aria-current="page"] { color:var(--ink); border-color:var(--ember); }
