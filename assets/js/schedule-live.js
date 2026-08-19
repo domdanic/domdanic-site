@@ -133,7 +133,6 @@
 
   const elsewhereGroup = document.createElement("div");
   elsewhereGroup.className = "schedule-group schedule-group-elsewhere";
-  elsewhereGroup.hidden = true;
 
   const elsewhereHeading = makeGroupHeading(
     "Catch Me Elsewhere",
@@ -182,11 +181,12 @@
 
       renderEvents(tbody, mine, "Nothing is currently scheduled on my channel. Check back soon.");
 
-      if (elsewhereBody && elsewhere.length > 0) {
-        renderEvents(elsewhereBody, elsewhere, "");
-        elsewhereGroup.hidden = false;
-      } else {
-        elsewhereGroup.hidden = true;
+      if (elsewhereBody) {
+        renderEvents(
+          elsewhereBody,
+          elsewhere,
+          "No guest streams or appearances are currently scheduled."
+        );
       }
 
       status.textContent = "Live schedule synced from ScheduleHat.";
@@ -195,7 +195,13 @@
     .catch(error => {
       console.warn("ScheduleHat calendar unavailable or unclassified; using recurring fallback schedule.", error);
       tbody.innerHTML = fallbackRows;
-      elsewhereGroup.hidden = true;
+      if (elsewhereBody) {
+        renderEvents(
+          elsewhereBody,
+          [],
+          "Live guest-stream data is temporarily unavailable."
+        );
+      }
       status.textContent = "Live calendar unavailable — showing the recurring fallback schedule.";
       status.classList.add("is-fallback");
     });
