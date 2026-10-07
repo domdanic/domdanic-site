@@ -223,6 +223,22 @@ p { max-width: 76ch; }
   background: rgba(116,49,44,.4);
 }
 
+.status-button[data-status="love"][aria-pressed="true"] {
+  color: #f4fff6;
+  border-color: var(--available);
+  background: rgba(65,113,77,.36);
+}
+.status-button[data-status="interested"][aria-pressed="true"] {
+  color: #fff8e8;
+  border-color: var(--maybe);
+  background: rgba(132,96,32,.38);
+}
+.status-button[data-status="avoid"][aria-pressed="true"] {
+  color: #fff0ef;
+  border-color: var(--unavailable);
+  background: rgba(116,49,44,.4);
+}
+
 .check-grid {
   display: grid;
   grid-template-columns: repeat(3,minmax(0,1fr));
