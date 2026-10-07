@@ -118,7 +118,7 @@
         <p class="section-kicker">Participation</p>
         <h2>A few useful planning flags.</h2>
         <div class="check-grid">
-          ${checkCard("voice_chat", "I'm comfortable joining Discord voice while I'm involved.", !!answers.voice_chat)}
+          ${checkCard("no_voice_chat", "I'm not comfortable joining Discord voice.", !!answers.no_voice_chat)}
           ${checkCard("own_pov", "I may stream my own POV while I'm participating. (Useful for Stream Together / Shared Chat planning.)", !!answers.own_pov)}
         </div>
 
@@ -288,7 +288,7 @@
     const saveButton = document.querySelector("#save");
     const status = document.querySelector("#save-status");
 
-    const availability = [...document.querySelectorAll(".slot")].flatMap(slot => {
+    const availability = [...document.querySelectorAll(".slot[data-slot]")].flatMap(slot => {
       const selected = slot.querySelector('.status-button[aria-pressed="true"]');
       return selected ? [{
         slot_start_utc: slot.dataset.slot,
@@ -304,7 +304,7 @@
     );
 
     const answers = {
-      voice_chat: document.querySelector('input[name="voice_chat"]').checked,
+      no_voice_chat: document.querySelector('input[name="no_voice_chat"]').checked,
       own_pov: document.querySelector('input[name="own_pov"]').checked,
       games
     };
