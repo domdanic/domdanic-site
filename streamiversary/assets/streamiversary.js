@@ -117,9 +117,23 @@
         <p class="section-kicker">Participation</p>
         <h2>A few useful planning flags.</h2>
         <div class="check-grid">
-          ${checkCard("return_later", "I'm happy to leave and come back for another part of the marathon.", !!answers.return_later)}
           ${checkCard("voice_chat", "I'm comfortable joining Discord voice while I'm involved.", !!answers.voice_chat)}
-          ${checkCard("own_pov", "I may stream my own POV while I'm participating.", !!answers.own_pov)}
+          ${checkCard("own_pov", "I may stream my own POV while I'm participating. (Useful for Stream Together / Shared Chat planning.)", !!answers.own_pov)}
+        </div>
+
+        <div class="slot-group">
+          <div class="slot-group-heading">
+            <h3>Games I'm interested in</h3>
+            <p>Pick as many as sound fun. This test list will eventually be editable from the admin page.</p>
+          </div>
+          <div class="check-grid">
+            ${gameCard("Fortnite", answers.games)}
+            ${gameCard("Baldur's Gate 3", answers.games)}
+            ${gameCard("Party Animals", answers.games)}
+            ${gameCard("PANICORE", answers.games)}
+            ${gameCard("Jackbox Party Pack", answers.games)}
+            ${gameCard("Lethal Company", answers.games)}
+          </div>
         </div>
 
         <label class="notes-label" for="notes">
@@ -210,6 +224,17 @@
     `;
   }
 
+  function gameCard(game, selectedGames) {
+    const selected = Array.isArray(selectedGames) && selectedGames.includes(game);
+
+    return `
+      <label class="check-card">
+        <input type="checkbox" name="game" value="${esc(game)}" ${selected ? "checked" : ""}>
+        <span>${esc(game)}</span>
+      </label>
+    `;
+  }
+
   function bindAvailability() {
     document.querySelectorAll(".status-button").forEach(button => {
       button.addEventListener("click", () => {
@@ -240,9 +265,9 @@
     });
 
     const answers = {
-      return_later: document.querySelector('input[name="return_later"]').checked,
       voice_chat: document.querySelector('input[name="voice_chat"]').checked,
-      own_pov: document.querySelector('input[name="own_pov"]').checked
+      own_pov: document.querySelector('input[name="own_pov"]').checked,
+      games: [...document.querySelectorAll('input[name="game"]:checked')].map(input => input.value)
     };
 
     saveButton.disabled = true;
