@@ -11,9 +11,13 @@
   const gamesStatus = document.querySelector("#games-status");
   const gamesList = document.querySelector("#games-list");
   const addGameForm = document.querySelector("#add-game-form");
+  const inviteesStatus = document.querySelector("#invitees-status");
+  const inviteesList = document.querySelector("#invitees-list");
+  const addInviteeForm = document.querySelector("#add-invitee-form");
 
   let adminKey = "";
   let games = [];
+  let invitees = [];
 
   loginForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -45,16 +49,20 @@
 
   eventForm.addEventListener("submit", saveEvent);
   addGameForm.addEventListener("submit", addGame);
+  addInviteeForm.addEventListener("submit", addInvitee);
 
   async function loadAdmin() {
     const values = await Promise.all([
       api("/admin/event"),
-      api("/admin/games")
+      api("/admin/games"),
+      api("/admin/invitees")
     ]);
 
     populateEvent(values[0].event);
     games = values[1].games || [];
+    invitees = values[2].invitees || [];
     drawGames();
+    drawInvitees();
     setStatus(loginStatus, "");
   }
 
@@ -223,6 +231,214 @@
       setStatus(gamesStatus, error.message || "Unable to delete game.", "error");
       button.disabled = false;
     }
+  }
+
+  async function addInvitee(event) {
+    event.preventDefault();
+
+    const handleInput = document.querySelector("#new-invitee-handle");
+    const displayInput = document.querySelector("#new-invitee-display");
+    const handle = handleInput.value.trim();
+    const displayName = displayInput.value.trim();
+
+    if (!handle) return;
+
+    const button = addInviteeForm.querySelector("button");
+    button.disabled = true;
+    setStatus(inviteesStatus, "Creating invite…");
+
+    try {
+      const data = await api("/admin/invitees", {
+        method: "POST",
+        body: JSON.stringify({
+          handle: handle,
+          display_name: displayName
+        })
+      });
+
+      invitees.push(data.invitee);
+      invitees.sort(inviteeSort);
+      handleInput.value = "";
+      displayInput.value = "";
+      drawInvitees();
+      setStatus(inviteesStatus, "Invitee added. Use Copy Invite Link when you're ready to send it.", "success");
+    } catch (error) {
+      setStatus(inviteesStatus, error.message || "Unable to add invitee.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  function drawInvitees() {
+    if (!invitees.length) {
+      inviteesList.innerHTML = '<div class="empty">No invitees configured.</div>';
+      return;
+    }
+
+    inviteesList.innerHTML = invitees
+      .slice()
+      .sort(inviteeSort)
+      .map(invitee => {
+        const responseText = invitee.has_response
+          ? '<span class="response-yes"><strong>Response:</strong> Submitted</span>'
+          : '<span class="response-no"><strong>Response:</strong> Not submitted</span>';
+
+        const linkButton = invitee.has_saved_link
+          ? '<button class="button secondary invitee-copy" type="button">Copy invite link</button>'
+          : '<button class="button secondary invitee-recover-toggle" type="button">Recover existing link</button>';
+
+        return '<div class="invitee-row" data-invitee-id="' + invitee.id + '">' +
+          '<div class="invitee-main">' +
+            '<label class="field">' +
+              '<span>Handle</span>' +
+              '<input class="invitee-handle" type="text" maxlength="80" value="' + esc(invitee.handle) + '">' +
+            '</label>' +
+            '<label class="field">' +
+              '<span>Display name</span>' +
+              '<input class="invitee-display" type="text" maxlength="100" value="' + esc(invitee.display_name) + '">' +
+            '</label>' +
+            '<label class="invitee-active">' +
+              '<input class="invitee-enabled" type="checkbox" ' + (invitee.active ? "checked" : "") + '>' +
+              '<span>Active</span>' +
+            '</label>' +
+            '<button class="button secondary invitee-save" type="button">Save</button>' +
+            linkButton +
+          '</div>' +
+          '<div class="invitee-meta">' +
+            responseText +
+            '<span><strong>Link:</strong> ' + (invitee.has_saved_link ? "Stored securely" : "Needs one-time recovery") + '</span>' +
+          '</div>' +
+          (!invitee.has_saved_link
+            ? '<div class="recovery-box" hidden>' +
+                '<input class="invitee-recovery-value" type="text" autocomplete="off" placeholder="Paste the saved invite URL or token">' +
+                '<button class="button invitee-recover" type="button">Save existing link</button>' +
+              '</div>'
+            : '') +
+        '</div>';
+      })
+      .join("");
+
+    inviteesList.querySelectorAll(".invitee-row").forEach(row => {
+      row.querySelector(".invitee-save").addEventListener("click", () => saveInvitee(row));
+
+      const copyButton = row.querySelector(".invitee-copy");
+      if (copyButton) {
+        copyButton.addEventListener("click", () => copyInviteLink(row));
+      }
+
+      const recoverToggle = row.querySelector(".invitee-recover-toggle");
+      if (recoverToggle) {
+        recoverToggle.addEventListener("click", () => {
+          const box = row.querySelector(".recovery-box");
+          box.hidden = !box.hidden;
+          if (!box.hidden) row.querySelector(".invitee-recovery-value").focus();
+        });
+      }
+
+      const recoverButton = row.querySelector(".invitee-recover");
+      if (recoverButton) {
+        recoverButton.addEventListener("click", () => recoverInviteLink(row));
+      }
+    });
+  }
+
+  async function saveInvitee(row) {
+    const id = Number(row.dataset.inviteeId);
+    const button = row.querySelector(".invitee-save");
+    button.disabled = true;
+    setStatus(inviteesStatus, "Saving invitee…");
+
+    const payload = {
+      handle: row.querySelector(".invitee-handle").value.trim(),
+      display_name: row.querySelector(".invitee-display").value.trim(),
+      active: row.querySelector(".invitee-enabled").checked
+    };
+
+    try {
+      const data = await api("/admin/invitees/" + id, {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      });
+
+      const index = invitees.findIndex(invitee => Number(invitee.id) === id);
+      if (index !== -1) invitees[index] = data.invitee;
+
+      drawInvitees();
+      setStatus(inviteesStatus, "Invitee saved.", "success");
+    } catch (error) {
+      setStatus(inviteesStatus, error.message || "Unable to save invitee.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function copyInviteLink(row) {
+    const id = Number(row.dataset.inviteeId);
+    const button = row.querySelector(".invitee-copy");
+    button.disabled = true;
+    setStatus(inviteesStatus, "Loading invite link…");
+
+    try {
+      const data = await api("/admin/invitees/" + id + "/link");
+      await copyText(data.invite_url);
+      setStatus(inviteesStatus, "Invite link copied.", "success");
+    } catch (error) {
+      setStatus(inviteesStatus, error.message || "Unable to copy invite link.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function recoverInviteLink(row) {
+    const id = Number(row.dataset.inviteeId);
+    const input = row.querySelector(".invitee-recovery-value");
+    const value = input.value.trim();
+
+    if (!value) {
+      setStatus(inviteesStatus, "Paste the existing invite link first.", "error");
+      return;
+    }
+
+    const button = row.querySelector(".invitee-recover");
+    button.disabled = true;
+    setStatus(inviteesStatus, "Verifying and encrypting existing link…");
+
+    try {
+      await api("/admin/invitees/" + id + "/recover-link", {
+        method: "POST",
+        body: JSON.stringify({
+          invite_url: value
+        })
+      });
+
+      const index = invitees.findIndex(invitee => Number(invitee.id) === id);
+      if (index !== -1) invitees[index].has_saved_link = 1;
+
+      input.value = "";
+      drawInvitees();
+      setStatus(inviteesStatus, "Existing invite link recovered and stored securely.", "success");
+    } catch (error) {
+      setStatus(inviteesStatus, error.message || "Unable to recover invite link.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    window.prompt("Copy this invite link:", value);
+  }
+
+  function inviteeSort(a, b) {
+    return String(a.display_name || a.handle || "").localeCompare(
+      String(b.display_name || b.handle || ""),
+      undefined,
+      { sensitivity: "base" }
+    );
   }
 
   async function api(path, options = {}) {
