@@ -14,10 +14,16 @@
   const inviteesStatus = document.querySelector("#invitees-status");
   const inviteesList = document.querySelector("#invitees-list");
   const addInviteeForm = document.querySelector("#add-invitee-form");
+  const responsesStatus = document.querySelector("#responses-status");
+  const availabilityMatrix = document.querySelector("#availability-matrix");
+  const gamesMatrix = document.querySelector("#games-matrix");
+  const responseDetails = document.querySelector("#response-details");
+  const dangerStatus = document.querySelector("#danger-status");
 
   let adminKey = "";
   let games = [];
   let invitees = [];
+  let responseData = null;
 
   loginForm.addEventListener("submit", async event => {
     event.preventDefault();
@@ -50,6 +56,10 @@
   eventForm.addEventListener("submit", saveEvent);
   addGameForm.addEventListener("submit", addGame);
   addInviteeForm.addEventListener("submit", addInvitee);
+  document.querySelector("#refresh-responses").addEventListener("click", loadResponses);
+  document.querySelector("#clear-all-responses").addEventListener("click", clearAllResponses);
+  document.querySelector("#clear-all-games").addEventListener("click", clearAllGames);
+  document.querySelector("#clear-all-invitees").addEventListener("click", clearAllInvitees);
 
   async function loadAdmin() {
     const values = await Promise.all([
@@ -64,6 +74,14 @@
     drawGames();
     drawInvitees();
     setStatus(loginStatus, "");
+
+    loadResponses().catch(error => {
+      setStatus(
+        responsesStatus,
+        error.message || "Response matrix is unavailable until the Worker update is deployed.",
+        "error"
+      );
+    });
   }
 
   function populateEvent(event) {
@@ -169,7 +187,7 @@
             '<input class="game-enabled" type="checkbox" ' + (game.active ? "checked" : "") + '>' +
             '<span>Active</span>' +
           '</label>' +
-          '<button class="button secondary game-save" type="button">Save</button>' +
+          '<button class="button secondary game-save" type="button">Save game</button>' +
           '<button class="button danger game-delete" type="button">Delete</button>' +
         '</div>';
       })
@@ -178,6 +196,7 @@
     gamesList.querySelectorAll(".game-row").forEach(row => {
       row.querySelector(".game-save").addEventListener("click", () => saveGame(row));
       row.querySelector(".game-delete").addEventListener("click", () => deleteGame(row));
+      row.querySelector(".game-enabled").addEventListener("change", () => saveGame(row));
     });
   }
 
@@ -308,6 +327,10 @@
             responseText +
             '<span><strong>Link:</strong> ' + (invitee.has_saved_link ? "Stored securely" : "Needs one-time recovery") + '</span>' +
           '</div>' +
+          '<div class="invitee-actions">' +
+            (invitee.has_response ? '<button class="button secondary invitee-clear-response" type="button">Clear response</button>' : '') +
+            '<button class="button danger invitee-delete" type="button">Delete invitee</button>' +
+          '</div>' +
           (!invitee.has_saved_link
             ? '<div class="recovery-box" hidden>' +
                 '<input class="invitee-recovery-value" type="text" autocomplete="off" placeholder="Paste the saved invite URL or token">' +
@@ -320,6 +343,14 @@
 
     inviteesList.querySelectorAll(".invitee-row").forEach(row => {
       row.querySelector(".invitee-save").addEventListener("click", () => saveInvitee(row));
+      row.querySelector(".invitee-enabled").addEventListener("change", () => saveInvitee(row));
+
+      const clearResponseButton = row.querySelector(".invitee-clear-response");
+      if (clearResponseButton) {
+        clearResponseButton.addEventListener("click", () => clearInviteeResponse(row));
+      }
+
+      row.querySelector(".invitee-delete").addEventListener("click", () => deleteInvitee(row));
 
       const copyButton = row.querySelector(".invitee-copy");
       if (copyButton) {
