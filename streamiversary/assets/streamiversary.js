@@ -64,6 +64,7 @@
       (data.response?.availability || []).map(row => [row.slot_start_utc, row.status])
     );
     const answers = data.response?.answers || {};
+    const gamePreferences = normalizeGamePreferences(answers.games);
 
     app.className = "";
     app.innerHTML = `
@@ -123,16 +124,16 @@
 
         <div class="slot-group">
           <div class="slot-group-heading">
-            <h3>Games I'm interested in</h3>
-            <p>Pick as many as sound fun. This test list will eventually be editable from the admin page.</p>
+            <h3>Game preferences</h3>
+            <p>Tell me what you'd love to play, what sounds fun, and what should absolutely not get scheduled while you're around.</p>
           </div>
-          <div class="check-grid">
-            ${gameCard("Fortnite", answers.games)}
-            ${gameCard("Baldur's Gate 3", answers.games)}
-            ${gameCard("Party Animals", answers.games)}
-            ${gameCard("PANICORE", answers.games)}
-            ${gameCard("Jackbox Party Pack", answers.games)}
-            ${gameCard("Lethal Company", answers.games)}
+          <div class="slot-list">
+            ${gamePreferenceRow("Fortnite", gamePreferences)}
+            ${gamePreferenceRow("Baldur's Gate 3", gamePreferences)}
+            ${gamePreferenceRow("Party Animals", gamePreferences)}
+            ${gamePreferenceRow("PANICORE", gamePreferences)}
+            ${gamePreferenceRow("Jackbox Party Pack", gamePreferences)}
+            ${gamePreferenceRow("Lethal Company", gamePreferences)}
           </div>
         </div>
 
@@ -224,30 +225,61 @@
     `;
   }
 
-  function gameCard(game, selectedGames) {
-    const selected = Array.isArray(selectedGames) && selectedGames.includes(game);
+  function normalizeGamePreferences(value) {
+    if (Array.isArray(value)) {
+      return Object.fromEntries(value.map(game => [game, "interested"]));
+    }
+
+    if (value && typeof value === "object") {
+      return value;
+    }
+
+    return {};
+  }
+
+  function gamePreferenceRow(game, preferences) {
+    const selected = preferences[game] || "";
 
     return `
-      <label class="check-card">
-        <input type="checkbox" name="game" value="${esc(game)}" ${selected ? "checked" : ""}>
-        <span>${esc(game)}</span>
-      </label>
+      <div class="slot game-preference" data-game="${esc(game)}">
+        <div class="slot-time">
+          <strong>${esc(game)}</strong>
+          <span>Leave blank for no strong opinion.</span>
+        </div>
+        <div class="status-buttons" role="group" aria-label="Preference for ${esc(game)}">
+          ${gamePreferenceButton("love", "Love to play", selected)}
+          ${gamePreferenceButton("interested", "Interested", selected)}
+          ${gamePreferenceButton("avoid", "Hell no", selected)}
+        </div>
+      </div>
+    `;
+  }
+
+  function gamePreferenceButton(status, label, selected) {
+    return `
+      <button
+        class="status-button game-status-button"
+        type="button"
+        data-status="${status}"
+        aria-pressed="${selected === status ? "true" : "false"}"
+      >${label}</button>
     `;
   }
 
   function bindAvailability() {
-    document.querySelectorAll(".status-button").forEach(button => {
-      button.addEventListener("click", () => {
-        const group = button.closest(".status-buttons");
-        const alreadySelected = button.getAttribute("aria-pressed") === "true";
+    document.querySelectorAll(".status-buttons").forEach(group => {
+      group.querySelectorAll(".status-button").forEach(button => {
+        button.addEventListener("click", () => {
+          const alreadySelected = button.getAttribute("aria-pressed") === "true";
 
-        group.querySelectorAll(".status-button").forEach(item => {
-          item.setAttribute("aria-pressed", "false");
+          group.querySelectorAll(".status-button").forEach(item => {
+            item.setAttribute("aria-pressed", "false");
+          });
+
+          if (!alreadySelected) {
+            button.setAttribute("aria-pressed", "true");
+          }
         });
-
-        if (!alreadySelected) {
-          button.setAttribute("aria-pressed", "true");
-        }
       });
     });
   }
@@ -264,10 +296,17 @@
       }] : [];
     });
 
+    const games = Object.fromEntries(
+      [...document.querySelectorAll(".game-preference")].flatMap(row => {
+        const selected = row.querySelector('.game-status-button[aria-pressed="true"]');
+        return selected ? [[row.dataset.game, selected.dataset.status]] : [];
+      })
+    );
+
     const answers = {
       voice_chat: document.querySelector('input[name="voice_chat"]').checked,
       own_pov: document.querySelector('input[name="own_pov"]').checked,
-      games: [...document.querySelectorAll('input[name="game"]:checked')].map(input => input.value)
+      games
     };
 
     saveButton.disabled = true;
