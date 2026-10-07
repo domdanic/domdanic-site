@@ -172,10 +172,111 @@ small { display:block; margin-top:.35rem; color:var(--muted); }
 }
 .recovery-box[hidden] { display:none; }
 
+.section-actions {
+  display:flex;
+  justify-content:flex-end;
+  align-items:end;
+}
+
+.invitee-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.55rem;
+  margin-top:.75rem;
+}
+.invitee-actions .button { min-width:110px; }
+
+.matrix-block {
+  margin-top:1.35rem;
+  padding-top:1.15rem;
+  border-top:1px solid var(--line);
+}
+.matrix-heading {
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  align-items:end;
+  margin-bottom:.75rem;
+}
+.matrix-heading p { margin:0; }
+
+.matrix-scroll {
+  overflow:auto;
+  border:1px solid rgba(225,176,123,.17);
+  background:rgba(12,9,8,.52);
+}
+.matrix-table {
+  width:max-content;
+  min-width:100%;
+  border-collapse:collapse;
+  font-size:.82rem;
+}
+.matrix-table th,
+.matrix-table td {
+  padding:.62rem .7rem;
+  border-right:1px solid rgba(225,176,123,.12);
+  border-bottom:1px solid rgba(225,176,123,.12);
+  text-align:center;
+  white-space:nowrap;
+}
+.matrix-table th {
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#17110e;
+  color:#e7d8cc;
+  font-weight:900;
+}
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+  position:sticky;
+  left:0;
+  z-index:1;
+  min-width:150px;
+  text-align:left;
+  background:#110d0b;
+}
+.matrix-table th:first-child { z-index:3; }
+.matrix-table td.matrix-note {
+  min-width:260px;
+  max-width:420px;
+  white-space:normal;
+  text-align:left;
+}
+.matrix-cell.available,
+.matrix-cell.love {
+  color:#f4fff6;
+  background:rgba(65,113,77,.28);
+}
+.matrix-cell.maybe,
+.matrix-cell.interested {
+  color:#fff8e8;
+  background:rgba(132,96,32,.3);
+}
+.matrix-cell.unavailable,
+.matrix-cell.avoid {
+  color:#fff0ef;
+  background:rgba(116,49,44,.32);
+}
+.matrix-cell.blank { color:#766d66; }
+
+.danger-zone {
+  border-color:rgba(169,82,74,.45);
+  box-shadow:0 -14px 34px rgba(130,35,27,.08);
+}
+.danger-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.65rem;
+}
+
 .empty { padding:1.5rem; border:1px dashed var(--line); color:var(--muted); text-align:center; }
 .admin-footer { padding:1.5rem 0; border-top:1px solid var(--line); background:#080605; color:var(--muted); font-size:.84rem; }
 @media (max-width:860px) {
   .section-head,.form-grid { grid-template-columns:1fr; }
+  .section-actions { justify-content:flex-start; }
+  .matrix-heading { display:block; }
+  .matrix-heading p { margin-top:.35rem; }
   .field-wide { grid-column:auto; }
   .game-row { grid-template-columns:1fr 100px auto; }
   .game-active { grid-column:1/2; }
