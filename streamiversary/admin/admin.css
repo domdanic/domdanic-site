@@ -116,6 +116,62 @@ small { display:block; margin-top:.35rem; color:var(--muted); }
 }
 .game-active input { width:1.05rem; min-height:auto; accent-color:var(--ember); }
 .game-row .button { min-width:78px; }
+
+.add-invitee {
+  display:grid;
+  grid-template-columns:minmax(150px,.7fr) minmax(180px,1fr) auto;
+  gap:.65rem;
+  align-items:end;
+  margin-bottom:1rem;
+}
+.invitees-list { display:grid; gap:.7rem; }
+.invitee-row {
+  padding:.9rem;
+  border:1px solid rgba(225,176,123,.17);
+  background:rgba(14,10,9,.72);
+}
+.invitee-main {
+  display:grid;
+  grid-template-columns:minmax(150px,.7fr) minmax(180px,1fr) auto auto auto;
+  gap:.55rem;
+  align-items:end;
+}
+.invitee-active {
+  display:flex;
+  align-items:center;
+  gap:.55rem;
+  min-height:46px;
+  padding:0 .65rem;
+  border:1px solid var(--line);
+  background:#0c0908;
+  color:#ddd2ca;
+}
+.invitee-active input {
+  width:1.05rem;
+  min-height:auto;
+  accent-color:var(--ember);
+}
+.invitee-meta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem 1rem;
+  margin:.75rem 0 0;
+  color:var(--muted);
+  font-size:.82rem;
+}
+.invitee-meta strong { color:var(--ink); }
+.response-yes { color:var(--good); }
+.response-no { color:var(--muted); }
+.recovery-box {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:.55rem;
+  margin-top:.75rem;
+  padding-top:.75rem;
+  border-top:1px solid var(--line);
+}
+.recovery-box[hidden] { display:none; }
+
 .empty { padding:1.5rem; border:1px dashed var(--line); color:var(--muted); text-align:center; }
 .admin-footer { padding:1.5rem 0; border-top:1px solid var(--line); background:#080605; color:var(--muted); font-size:.84rem; }
 @media (max-width:860px) {
@@ -123,12 +179,14 @@ small { display:block; margin-top:.35rem; color:var(--muted); }
   .field-wide { grid-column:auto; }
   .game-row { grid-template-columns:1fr 100px auto; }
   .game-active { grid-column:1/2; }
+  .invitee-main { grid-template-columns:1fr 1fr auto; }
+  .invitee-active { grid-column:1/2; }
 }
 @media (max-width:600px) {
   .admin-title { display:block; }
   .admin-title .button { margin-top:1rem; }
-  .login-row,.add-game,.game-row { grid-template-columns:1fr; }
-  .game-active { grid-column:auto; }
+  .login-row,.add-game,.add-invitee,.game-row,.invitee-main,.recovery-box { grid-template-columns:1fr; }
+  .game-active,.invitee-active { grid-column:auto; }
   .admin-badge { display:none; }
 }
 @media (prefers-reduced-motion:reduce) {
