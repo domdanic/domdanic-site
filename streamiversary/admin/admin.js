@@ -197,8 +197,48 @@
     gamesList.querySelectorAll(".game-row").forEach(row => {
       row.querySelector(".game-save").addEventListener("click", () => saveGame(row));
       row.querySelector(".game-delete").addEventListener("click", () => deleteGame(row));
-      row.querySelector(".game-enabled").addEventListener("change", () => saveGame(row));
+      row.querySelector(".game-enabled").addEventListener("change", () => saveGameActive(row));
     });
+  }
+
+  async function saveGameActive(row) {
+    const id = Number(row.dataset.gameId);
+    const checkbox = row.querySelector(".game-enabled");
+    const desiredState = checkbox.checked;
+
+    checkbox.disabled = true;
+    setStatus(
+      gamesStatus,
+      desiredState ? "Activating game…" : "Deactivating game…"
+    );
+
+    try {
+      await api("/admin/games/" + id, {
+        method: "PATCH",
+        body: JSON.stringify({
+          active: desiredState
+        })
+      });
+
+      const refreshed = await api("/admin/games");
+      games = refreshed.games || [];
+      drawGames();
+      loadResponses().catch(() => {});
+
+      setStatus(
+        gamesStatus,
+        desiredState ? "Game activated." : "Game deactivated.",
+        "success"
+      );
+    } catch (error) {
+      checkbox.checked = !desiredState;
+      checkbox.disabled = false;
+      setStatus(
+        gamesStatus,
+        error.message || "Unable to change game status.",
+        "error"
+      );
+    }
   }
 
   async function saveGame(row) {
