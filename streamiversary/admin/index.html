@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#120d0b">
+  <title>Streamiversary Admin | domdanic</title>
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="shell header-grid">
+      <a class="brand" href="/streamiversary/">domdanic</a>
+      <span class="admin-badge">Streamiversary Admin</span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section id="login-panel" class="panel login-panel">
+      <p class="eyebrow">Private control panel</p>
+      <h1>Streamiversary Admin</h1>
+      <p class="lead">Enter the admin password to load event settings. The password is kept only in this page's memory and is cleared when the page is refreshed or closed.</p>
+
+      <form id="login-form" class="login-form">
+        <label for="admin-key">Admin password</label>
+        <div class="login-row">
+          <input id="admin-key" name="admin-key" type="password" autocomplete="current-password" required>
+          <button class="button" type="submit">Unlock</button>
+        </div>
+        <p id="login-status" class="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <div id="admin-app" hidden>
+      <section class="admin-title">
+        <div>
+          <p class="eyebrow">Configuration</p>
+          <h1>Event Control</h1>
+          <p class="lead">Changes here update the Streamiversary event configuration in D1.</p>
+        </div>
+        <button id="lock-button" class="button secondary" type="button">Lock admin</button>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Event</p>
+            <h2>Core settings</h2>
+          </div>
+          <p class="muted">The start field is interpreted in the event timezone shown below.</p>
+        </div>
+
+        <form id="event-form" class="form-grid">
+          <label class="field field-wide">
+            <span>Event name</span>
+            <input id="event-name" type="text" maxlength="120" required>
+          </label>
+
+          <label class="field">
+            <span>Start date &amp; time</span>
+            <input id="event-start" type="datetime-local" required>
+          </label>
+
+          <label class="field">
+            <span>Event timezone</span>
+            <input id="event-timezone" type="text" list="timezone-options" required>
+            <datalist id="timezone-options">
+              <option value="America/Los_Angeles">
+              <option value="America/Denver">
+              <option value="America/Chicago">
+              <option value="America/New_York">
+              <option value="Europe/London">
+              <option value="Australia/Sydney">
+              <option value="Australia/Melbourne">
+            </datalist>
+          </label>
+
+          <label class="field">
+            <span>Guaranteed hours</span>
+            <input id="guaranteed-hours" type="number" min="1" max="168" step="1" required>
+          </label>
+
+          <label class="field">
+            <span>Potential overtime hours</span>
+            <input id="overtime-hours" type="number" min="0" max="168" step="1" required>
+          </label>
+
+          <label class="field">
+            <span>Availability block size (hours)</span>
+            <input id="slot-hours" type="number" min="1" max="12" step="1" required>
+          </label>
+
+          <label class="field field-wide">
+            <span>Event Discord invite URL</span>
+            <input id="discord-url" type="url" inputmode="url" placeholder="https://discord.gg/...">
+            <small>Leave blank to hide the Join Event Discord Server button.</small>
+          </label>
+
+          <div class="form-actions field-wide">
+            <button id="save-event" class="button" type="submit">Save event settings</button>
+            <span id="event-status" class="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Games</p>
+            <h2>Game list</h2>
+          </div>
+          <p class="muted">Active games appear on invite pages. Sort order controls their display order.</p>
+        </div>
+
+        <form id="add-game-form" class="add-game">
+          <label class="field">
+            <span>Add a game</span>
+            <input id="new-game-name" type="text" maxlength="100" placeholder="Game title" required>
+          </label>
+          <button class="button" type="submit">Add game</button>
+        </form>
+
+        <p id="games-status" class="status" aria-live="polite"></p>
+        <div id="games-list" class="games-list"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="admin-footer">
+    <div class="shell">© 2026 domdanic · Streamiversary administration</div>
+  </footer>
+
+  <script src="./admin.js" defer></script>
+</body>
+</html>
