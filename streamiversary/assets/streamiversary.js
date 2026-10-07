@@ -4,11 +4,11 @@
   const token = new URLSearchParams(location.search).get("invite");
   const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles";
 
-  const START = new Date("2026-12-11T14:00:00-08:00");
-  const SLOT_HOURS = 2;
-  const GUARANTEED_HOURS = 24;
-  const OVERTIME_HOURS = 12;
-  const TOTAL_SLOTS = (GUARANTEED_HOURS + OVERTIME_HOURS) / SLOT_HOURS;
+  let START = null;
+  let SLOT_HOURS = 2;
+  let GUARANTEED_HOURS = 24;
+  let OVERTIME_HOURS = 0;
+  let TOTAL_SLOTS = 0;
 
   const zoneLabel = zone => zone.replaceAll("_", " ");
   const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({
@@ -60,6 +60,35 @@
   }
 
   function renderInvite(data) {
+    const event = data.event || {};
+    START = new Date(event.start_at);
+    SLOT_HOURS = Number(event.slot_hours);
+    GUARANTEED_HOURS = Number(event.guaranteed_hours);
+    OVERTIME_HOURS = Number(event.overtime_hours);
+    TOTAL_SLOTS = (GUARANTEED_HOURS + OVERTIME_HOURS) / SLOT_HOURS;
+
+    if (!Number.isFinite(START.getTime()) || !Number.isInteger(TOTAL_SLOTS) || TOTAL_SLOTS <= 0) {
+      showError("This event is not configured correctly.", "The event schedule could not be rendered.");
+      return;
+    }
+
+    const eventName = event.name || "domdanic Streamiversary";
+    const eventZone = event.timezone || "America/Los_Angeles";
+    const games = Array.isArray(data.games) ? data.games : [];
+    const guaranteedSlots = GUARANTEED_HOURS / SLOT_HOURS;
+    const durationSummary = GUARANTEED_HOURS + " hours guaranteed" + (OVERTIME_HOURS ? " · up to " + OVERTIME_HOURS + " hours overtime" : "");
+    const gameRows = games.length
+      ? games.map(game => gamePreferenceRow(game.name, normalizeGamePreferences(data.response?.answers?.games))).join("")
+      : '<div class="invite-note">No games have been added to the event yet.</div>';
+    const discordButton = event.discord_invite_url
+      ? `<a class="discord-button" href="${esc(event.discord_invite_url)}" target="_blank" rel="noopener noreferrer">Join Event Discord Server</a>`
+      : "";
+    const overtimeSection = OVERTIME_HOURS
+      ? slotGroup("Potential overtime", "If the longhouse is still standing, the marathon may keep going.", guaranteedSlots, TOTAL_SLOTS, new Map((data.response?.availability || []).map(row => [row.slot_start_utc, row.status])))
+      : "";
+
+    document.title = eventName + " | domdanic";
+
     const existing = new Map(
       (data.response?.availability || []).map(row => [row.slot_start_utc, row.status])
     );
@@ -69,10 +98,12 @@
     app.className = "";
     app.innerHTML = `
       <section class="invite-hero">
-        <p class="eyebrow">domdanic Streamiversary 2026</p>
+        <p class="eyebrow">${esc(eventName)}</p>
         <h1>You're invited, ${esc(data.invitee.display_name)}.</h1>
-        <p class="lead">December 11–12 · 24 hours guaranteed · overtime possible.</p>
+        <p class="lead">${esc(dateTime(START, eventZone))} · ${esc(durationSummary)}.</p>
         <p>Mark when you're available, maybe available, or unavailable. You can come back through this same invite link and change your answers later.</p>
+
+        ${discordButton}
 
         <div class="summary-grid">
           <div class="summary-card">
@@ -81,7 +112,7 @@
           </div>
           <div class="summary-card">
             <span class="section-kicker">Guaranteed window</span>
-            <strong>24 hours</strong>
+            <strong>${GUARANTEED_HOURS} hours</strong>
           </div>
           <div class="summary-card">
             <span class="section-kicker">Your timezone</span>
@@ -99,7 +130,7 @@
           <div>
             <p class="section-kicker">Availability</p>
             <h2>When can you raid?</h2>
-            <p class="muted">Each block is two hours. Leaving a block unanswered means “I don't know yet.”</p>
+            <p class="muted">Each block is ${SLOT_HOURS} ${SLOT_HOURS === 1 ? "hour" : "hours"}. Leaving a block unanswered means “I don't know yet.”</p>
           </div>
           <div class="timezone-box">
             Times below are shown in <strong>${esc(zoneLabel(localZone))}</strong>.
@@ -110,8 +141,8 @@
           ${referenceTimes()}
         </div>
 
-        ${slotGroup("Guaranteed 24 hours", "The part that is happening no matter how terrible my decisions become.", 0, GUARANTEED_HOURS / SLOT_HOURS, existing)}
-        ${slotGroup("Potential overtime", "If the longhouse is still standing, the marathon may keep going.", GUARANTEED_HOURS / SLOT_HOURS, TOTAL_SLOTS, existing)}
+        ${slotGroup("Guaranteed " + GUARANTEED_HOURS + " hours", "The part that is happening no matter how terrible my decisions become.", 0, guaranteedSlots, existing)}
+        ${overtimeSection}
       </section>
 
       <section class="panel">
@@ -128,12 +159,7 @@
             <p>Tell me what you'd love to play, what sounds fun, and what should absolutely not get scheduled while you're around.</p>
           </div>
           <div class="slot-list">
-            ${gamePreferenceRow("Fortnite", gamePreferences)}
-            ${gamePreferenceRow("Baldur's Gate 3", gamePreferences)}
-            ${gamePreferenceRow("Party Animals", gamePreferences)}
-            ${gamePreferenceRow("PANICORE", gamePreferences)}
-            ${gamePreferenceRow("Jackbox Party Pack", gamePreferences)}
-            ${gamePreferenceRow("Lethal Company", gamePreferences)}
+            ${gameRows}
           </div>
         </div>
 
@@ -346,7 +372,7 @@
   function showError(title, message) {
     app.className = "error-panel";
     app.innerHTML = `
-      <p class="eyebrow">Streamiversary 2026</p>
+      <p class="eyebrow">Private invite</p>
       <h1>${esc(title)}</h1>
       <p>${esc(message)}</p>
     `;
