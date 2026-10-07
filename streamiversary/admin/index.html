@@ -110,7 +110,7 @@
             <p class="eyebrow">Games</p>
             <h2>Game list</h2>
           </div>
-          <p class="muted">Active games appear on invite pages. Sort order controls their display order.</p>
+          <p class="muted">Active games appear on invite pages. The Active toggle saves immediately; use Save game after changing a name or sort order.</p>
         </div>
 
         <form id="add-game-form" class="add-game">
@@ -150,6 +150,60 @@
 
         <p id="invitees-status" class="status" aria-live="polite"></p>
         <div id="invitees-list" class="invitees-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Responses</p>
+            <h2>Response matrix</h2>
+          </div>
+          <div class="section-actions">
+            <button id="refresh-responses" class="button secondary" type="button">Refresh responses</button>
+          </div>
+        </div>
+
+        <p id="responses-status" class="status" aria-live="polite"></p>
+
+        <div class="matrix-block">
+          <div class="matrix-heading">
+            <h3>Availability</h3>
+            <p class="muted">A = available · M = maybe · X = unavailable · — = unanswered</p>
+          </div>
+          <div id="availability-matrix" class="matrix-scroll"></div>
+        </div>
+
+        <div class="matrix-block">
+          <div class="matrix-heading">
+            <h3>Game preferences</h3>
+            <p class="muted">Love / Interested / Hell no. Only currently active games are shown.</p>
+          </div>
+          <div id="games-matrix" class="matrix-scroll"></div>
+        </div>
+
+        <div class="matrix-block">
+          <div class="matrix-heading">
+            <h3>Participation &amp; notes</h3>
+          </div>
+          <div id="response-details" class="matrix-scroll"></div>
+        </div>
+      </section>
+
+      <section class="panel danger-zone">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Danger zone</p>
+            <h2>Wipe current planning data</h2>
+          </div>
+          <p class="muted">These actions are permanent. Use them when resetting for a new event instead of carrying old answers forward.</p>
+        </div>
+
+        <div class="danger-actions">
+          <button id="clear-all-responses" class="button danger" type="button">Clear all responses</button>
+          <button id="clear-all-games" class="button danger" type="button">Delete all games</button>
+          <button id="clear-all-invitees" class="button danger" type="button">Delete entire guest roster</button>
+        </div>
+        <p id="danger-status" class="status" aria-live="polite"></p>
       </section>
     </div>
   </main>
