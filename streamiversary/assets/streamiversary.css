@@ -296,6 +296,30 @@ input:focus-visible { outline: 2px solid var(--ember-hot); outline-offset: 2px; 
   clip-path: polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
 }
 .save-button:disabled { opacity: .55; cursor: wait; }
+
+.discord-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  margin-top: 1rem;
+  padding: .75rem 1rem;
+  border: 1px solid var(--bronze);
+  color: var(--ink);
+  background: rgba(16,12,10,.88);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .76rem;
+  font-weight: 900;
+  clip-path: polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));
+}
+.discord-button:hover,
+.discord-button:focus-visible {
+  border-color: var(--ember-hot);
+  color: #fff;
+}
+
 .save-status { color: var(--muted); }
 .save-status.success { color: #a8d6b2; }
 .save-status.error { color: #e5aaa5; }
