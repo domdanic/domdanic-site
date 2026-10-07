@@ -50,6 +50,18 @@ export default {
       return addAdminGame(request, env);
     }
 
+    if (url.pathname === "/admin/games" && request.method === "DELETE") {
+      return clearAdminGames(request, env);
+    }
+
+    if (url.pathname === "/admin/responses" && request.method === "GET") {
+      return getAdminResponses(request, env);
+    }
+
+    if (url.pathname === "/admin/responses" && request.method === "DELETE") {
+      return clearAllAdminResponses(request, env);
+    }
+
     const gameMatch = url.pathname.match(/^\/admin\/games\/(\d+)$/);
 
     if (gameMatch && request.method === "PATCH") {
@@ -68,6 +80,10 @@ export default {
       return addAdminInvitee(request, env);
     }
 
+    if (url.pathname === "/admin/invitees" && request.method === "DELETE") {
+      return clearAdminInvitees(request, env);
+    }
+
     const inviteeLinkMatch = url.pathname.match(/^\/admin\/invitees\/(\d+)\/link$/);
 
     if (inviteeLinkMatch && request.method === "GET") {
@@ -80,10 +96,20 @@ export default {
       return recoverAdminInviteLink(request, env, Number(inviteeRecoverMatch[1]));
     }
 
+    const inviteeResponseMatch = url.pathname.match(/^\/admin\/invitees\/(\d+)\/response$/);
+
+    if (inviteeResponseMatch && request.method === "DELETE") {
+      return clearAdminInviteeResponse(request, env, Number(inviteeResponseMatch[1]));
+    }
+
     const inviteeMatch = url.pathname.match(/^\/admin\/invitees\/(\d+)$/);
 
     if (inviteeMatch && request.method === "PATCH") {
       return updateAdminInvitee(request, env, Number(inviteeMatch[1]));
+    }
+
+    if (inviteeMatch && request.method === "DELETE") {
+      return deleteAdminInvitee(request, env, Number(inviteeMatch[1]));
     }
 
     return json(request, {
@@ -489,6 +515,103 @@ async function deleteAdminGame(request, env, gameId) {
   return json(request, { ok: true });
 }
 
+async function clearAdminGames(request, env) {
+  const result = await env.DB.prepare(`
+    DELETE FROM games
+    WHERE event_id = 1
+  `).run();
+
+  return json(request, {
+    ok: true,
+    deleted: Number(result.meta.changes || 0)
+  });
+}
+
+async function getAdminResponses(request, env) {
+  const event = await getEventConfig(env);
+
+  if (!event) {
+    return json(request, { ok: false, error: "Event configuration is missing." }, 404);
+  }
+
+  const { results: games } = await env.DB.prepare(`
+    SELECT id, name, sort_order
+    FROM games
+    WHERE event_id = 1
+      AND active = 1
+    ORDER BY sort_order, id
+  `).all();
+
+  const { results: rows } = await env.DB.prepare(`
+    SELECT
+      i.id AS invitee_id,
+      i.handle,
+      i.display_name,
+      i.active,
+      r.timezone,
+      r.answers_json,
+      r.notes,
+      r.submitted_at,
+      r.updated_at
+    FROM invitees i
+    LEFT JOIN responses r
+      ON r.invitee_id = i.id
+    ORDER BY lower(i.display_name), lower(i.handle), i.id
+  `).all();
+
+  const { results: availabilityRows } = await env.DB.prepare(`
+    SELECT invitee_id, slot_start_utc, status
+    FROM availability
+    ORDER BY invitee_id, slot_start_utc
+  `).all();
+
+  const availabilityByInvitee = new Map();
+
+  for (const row of availabilityRows) {
+    if (!availabilityByInvitee.has(row.invitee_id)) {
+      availabilityByInvitee.set(row.invitee_id, []);
+    }
+
+    availabilityByInvitee.get(row.invitee_id).push({
+      slot_start_utc: row.slot_start_utc,
+      status: row.status
+    });
+  }
+
+  const responses = rows.map(row => ({
+    invitee_id: row.invitee_id,
+    handle: row.handle,
+    display_name: row.display_name,
+    active: row.active,
+    timezone: row.timezone,
+    answers: safeJsonParse(row.answers_json, {}),
+    notes: row.notes ?? "",
+    submitted_at: row.submitted_at ?? null,
+    updated_at: row.updated_at ?? null,
+    availability: availabilityByInvitee.get(row.invitee_id) || []
+  }));
+
+  return json(request, {
+    ok: true,
+    event: publicEvent(event),
+    games,
+    responses
+  });
+}
+
+async function clearAllAdminResponses(request, env) {
+  await env.DB.batch([
+    env.DB.prepare(`
+      DELETE FROM availability
+    `),
+    env.DB.prepare(`
+      DELETE FROM responses
+    `)
+  ]);
+
+  return json(request, { ok: true });
+}
+
 async function getAdminInvitees(request, env) {
   const { results: invitees } = await env.DB.prepare("\n    SELECT\n      i.id,\n      i.handle,\n      i.display_name,\n      i.active,\n      CASE WHEN i.token_encrypted IS NULL THEN 0 ELSE 1 END AS has_saved_link,\n      i.created_at,\n      i.updated_at,\n      CASE WHEN r.invitee_id IS NULL THEN 0 ELSE 1 END AS has_response,\n      r.submitted_at,\n      r.updated_at AS response_updated_at\n    FROM invitees i\n    LEFT JOIN responses r\n      ON r.invitee_id = i.id\n    ORDER BY lower(i.display_name), lower(i.handle), i.id\n  ").all();
 
@@ -706,6 +829,86 @@ async function recoverAdminInviteLink(request, env, inviteeId) {
     ok: true,
     invite_url: inviteUrl(token)
   });
+}
+
+async function clearAdminInviteeResponse(request, env, inviteeId) {
+  if (!Number.isInteger(inviteeId) || inviteeId <= 0) {
+    return json(request, { ok: false, error: "Invalid invitee id." }, 400);
+  }
+
+  const exists = await env.DB.prepare(`
+    SELECT id
+    FROM invitees
+    WHERE id = ?
+    LIMIT 1
+  `).bind(inviteeId).first();
+
+  if (!exists) {
+    return json(request, { ok: false, error: "Invitee not found." }, 404);
+  }
+
+  await env.DB.batch([
+    env.DB.prepare(`
+      DELETE FROM availability
+      WHERE invitee_id = ?
+    `).bind(inviteeId),
+    env.DB.prepare(`
+      DELETE FROM responses
+      WHERE invitee_id = ?
+    `).bind(inviteeId)
+  ]);
+
+  return json(request, { ok: true });
+}
+
+async function deleteAdminInvitee(request, env, inviteeId) {
+  if (!Number.isInteger(inviteeId) || inviteeId <= 0) {
+    return json(request, { ok: false, error: "Invalid invitee id." }, 400);
+  }
+
+  const exists = await env.DB.prepare(`
+    SELECT id
+    FROM invitees
+    WHERE id = ?
+    LIMIT 1
+  `).bind(inviteeId).first();
+
+  if (!exists) {
+    return json(request, { ok: false, error: "Invitee not found." }, 404);
+  }
+
+  await env.DB.batch([
+    env.DB.prepare(`
+      DELETE FROM availability
+      WHERE invitee_id = ?
+    `).bind(inviteeId),
+    env.DB.prepare(`
+      DELETE FROM responses
+      WHERE invitee_id = ?
+    `).bind(inviteeId),
+    env.DB.prepare(`
+      DELETE FROM invitees
+      WHERE id = ?
+    `).bind(inviteeId)
+  ]);
+
+  return json(request, { ok: true });
+}
+
+async function clearAdminInvitees(request, env) {
+  await env.DB.batch([
+    env.DB.prepare(`
+      DELETE FROM availability
+    `),
+    env.DB.prepare(`
+      DELETE FROM responses
+    `),
+    env.DB.prepare(`
+      DELETE FROM invitees
+    `)
+  ]);
+
+  return json(request, { ok: true });
 }
 
 async function getAdminInviteeRow(env, inviteeId) {
